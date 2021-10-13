@@ -1,5 +1,5 @@
-//Projeto na disciplina de Software Seguro baseado em Java//
+# Projeto na disciplina de Software Seguro baseado em Java
 
-- Integrantes - 
+Integrantes:
 Pedro Noah de Lima Milarski 
 Rafael Schuch Pinto Selner
