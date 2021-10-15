@@ -24,7 +24,7 @@ public class App {
             if(leitura.equals("1")){criarConta();}
             if(leitura.equals("2")){efetuarLogin();}
             if(leitura.equals("3")){confirmaEmail();}
-            if(leitura.equals("4")){efetuarLogin();}
+            if(leitura.equals("4")){recuperaSenha();}
             if(leitura.equals("5")){
                 System.out.print("Programa Finalizado...");
                 break;
@@ -73,8 +73,26 @@ public class App {
         System.out.println(ctrl.confirmarTokenE(formulario));
     }
 
+    private static void recuperaSenha(){
+        String formulario[] = new String[2];
+        String resultado;
+        formulario[1] = "";
+        System.out.print("Digite seu email: ");
+        while(true){
+            formulario[1] = ler.nextLine();
+            if((resultado = ctrl.iniciarRecuperarSenha(formulario)).equals("c")){break;}
+            System.out.print(resultado+"\nDigite seu email: ");
+        }
+        System.out.print("Token recebido: ");
+        formulario[0] = ler.nextLine();
+        System.out.print("Nova Senha: ");
+        while((formulario[1] = testarSenha(ler.nextLine())) == "erro"){
+            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova Senha: ");
+        }
+        System.out.println(ctrl.recuperarSenha(formulario));
+    }
+
     private static void menuLogado(){
-        System.out.println(chaveS);
         String leitura;
         while(true){
             System.out.print("- Menu Logado -\n"+

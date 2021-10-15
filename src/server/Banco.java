@@ -70,6 +70,38 @@ class Banco {
         }
     }
 
+    int insereRecuperarToken(String[] form){
+        try{
+            PreparedStatement ps;
+            String query =  "UPDATE user SET tokenSenha=? WHERE email=?";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[0]);
+            ps.setString(2, form[1]);
+            int retorno = ps.executeUpdate();
+            ps.close();
+            return retorno;
+        }
+        catch(SQLException ex) {
+            return 0;
+        }
+    }
+
+    int mudaSenha(String[] form){
+        try{
+            PreparedStatement ps;
+            String query =  "UPDATE user SET tokenSenha='0', senha=? WHERE tokenSenha=?";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[1]);
+            ps.setString(2, form[0]);
+            int retorno = ps.executeUpdate();
+            ps.close();
+            return retorno;
+        }
+        catch(SQLException ex) {
+            return 0;
+        }
+    }
+
     boolean checaCpf(String cpf){
         ResultSet result;
         try {
@@ -114,13 +146,5 @@ class Banco {
             return true;
         }
         return true;
-    }
-
-    public static void main(String[] args) {
-        Banco bdd = new Banco();
-        String formu[] = new String[3];
-        formu[1] = "rafael";
-        formu[2] = "8450e37151204eea2f9c8bcab135ac42f9d7d57d20af4c3010a629a3d95ce88d";
-        System.out.println(bdd.checaTokenEmail(formu));
     }
 }

@@ -29,6 +29,9 @@ public class Controlador {
         }
         BigInteger number = new BigInteger(1, b);
         StringBuilder hexString = new StringBuilder(number.toString(16)); 
+        while (hexString.length() < 8) { 
+            hexString.insert(0, '0'); 
+        }
         form[4] = hexString.toString();
         if((resultado = bd.insereNoBanco(form)).equals("Sucesso")){
             //enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
@@ -42,8 +45,7 @@ public class Controlador {
             return "Utilização de caracteres especiais fora do campo de senha é proibido.\n";
         }
         form[2] = hashingSalt(form[2]);
-        System.out.println(form[2]);
-        if(bd.checaTokenEmail(form)){return "Por favor, confirme seu email.";}
+        if(bd.checaTokenEmail(form)){return "Conta não existe, ou precisa confirmar seu email.";}
         byte b[] = new byte[32];
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
@@ -51,7 +53,10 @@ public class Controlador {
             e.printStackTrace();
         }
         BigInteger number = new BigInteger(1, b);
-        StringBuilder hexString = new StringBuilder(number.toString(16)); 
+        StringBuilder hexString = new StringBuilder(number.toString(16));
+        while (hexString.length() < 64) { 
+            hexString.insert(0, '0'); 
+        }
         form[0] = hexString.toString();
         if(bd.insereToken(form) == 1){return "id="+form[0];}
         return "Falha no Login.";
@@ -59,9 +64,39 @@ public class Controlador {
 
     public String confirmarTokenE(String[] form){
         if(form.length != 1){return "Erro";}
+        if(form[0].length() < 8){return "Código inválido!";}
         if(testeStrings(form)){return "Utilização de caracteres especiais é proibido.\n";}
         if(bd.confirmaTokenEmail(form[0]) == 1){return "Conta confirmada com sucesso";}
         return "Token inválido!";
+    }
+
+    public String iniciarRecuperarSenha(String[] form){
+        if(form.length != 2){return "Erro";}
+        if(form[1].equals("")){return "";}
+        if(testeStrings(form)){return "Utilização de caracteres especiais é proibido.\n";}
+        byte b[] = new byte[16];
+        try {
+            SecureRandom.getInstanceStrong().nextBytes(b);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        BigInteger number = new BigInteger(1, b);
+        StringBuilder hexString = new StringBuilder(number.toString(16));
+        while (hexString.length() < 32) { 
+            hexString.insert(0, '0'); 
+        } 
+        form[0] = hexString.toString();
+        bd.insereRecuperarToken(form);
+        return "c";
+    }
+
+    public String recuperarSenha(String[] form){
+        if(form.length != 2){return "Erro";}
+        if(form[0].length() < 32){return "Erro";}
+        if(testeStrings(form)){return "Utilização de caracteres especiais é proibido.\n";}
+        form[1] = hashingSalt(form[1]);
+        if(bd.mudaSenha(form) == 1){return "Sucesso!";}
+        return "Erro";
     }
 
     public void usuarioSair(){}
@@ -170,9 +205,6 @@ public class Controlador {
             message.setText(conteudo);
 
             Transport.send(message);
-
-            System.out.println("Done");
-
         } catch (MessagingException e) {
             e.printStackTrace();
         }
