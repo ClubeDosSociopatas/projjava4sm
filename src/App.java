@@ -16,12 +16,16 @@ public class App {
             System.out.print("- Menu Inicial -\n"+
                              "1 - Criar Conta\n"+
                              "2 - Efetuar Login\n"+
-                             "3 - Sair\n"+
+                             "3 - Confirmar email\n"+
+                             "4 - Recuperar Senha\n"+
+                             "5 - Sair\n"+
                              "Entre com sua escolha: ");
             leitura = ler.nextLine();
             if(leitura.equals("1")){criarConta();}
             if(leitura.equals("2")){efetuarLogin();}
-            if(leitura.equals("3")){
+            if(leitura.equals("3")){confirmaEmail();}
+            if(leitura.equals("4")){efetuarLogin();}
+            if(leitura.equals("5")){
                 System.out.print("Programa Finalizado...");
                 break;
             }
@@ -29,7 +33,7 @@ public class App {
     }
 
     private static void criarConta(){
-        String formulario[] = new String[4];
+        String formulario[] = new String[5];
         System.out.print("Nome de Usuario: ");
         formulario[0] = ler.nextLine();
         System.out.print("Senha: ");
@@ -53,15 +57,24 @@ public class App {
         formulario[1] = ler.nextLine();
         System.out.print("Senha: ");
         formulario[2] = testarSenha(ler.nextLine());
-        if((resultado = ctrl.usuarioLogar(formulario)) != "erro"){
+        resultado = ctrl.usuarioLogar(formulario);
+        if(resultado.charAt(0) == 'i' && resultado.charAt(1) == 'd'){
             System.out.println("Logado com Sucesso!\n");
-            chaveS = resultado;
+            chaveS = resultado.substring(resultado.indexOf("=")+1);
             return;
         }
-        System.out.println("Falha no Login.\n");
+        System.out.println(resultado);
+    }
+
+    private static void confirmaEmail(){
+        String formulario[] = new String[1];
+        System.out.print("Digite o token recebido: ");
+        formulario[0] = ler.nextLine();
+        System.out.println(ctrl.confirmarTokenE(formulario));
     }
 
     private static void menuLogado(){
+        System.out.println(chaveS);
         String leitura;
         while(true){
             System.out.print("- Menu Logado -\n"+

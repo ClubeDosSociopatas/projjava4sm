@@ -35,13 +35,14 @@ class Banco {
     String insereNoBanco(String[] form){
         try{
             PreparedStatement ps;
-            String query =  "INSERT INTO user (id, nome, senha, cpf, email) VALUES (0, ?, ?, ?, ?)";
+            String query =  "INSERT INTO user (id, nome, senha, cpf, email, tokenCEmail, tokenSenha) VALUES (0, ?, ?, ?, ?, ?, '0')";
 
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
             ps.setString(2, form[1]);
             ps.setString(3, form[2]);
             ps.setString(4, form[3]);
+            ps.setString(5, form[4]);
             ps.executeUpdate();
             ps.close();
 
@@ -71,7 +72,6 @@ class Banco {
 
     boolean checaCpf(String cpf){
         ResultSet result;
-        System.out.println(cpf);
         try {
             PreparedStatement ps;
             String query =  "SELECT * FROM user WHERE cpf=?";
@@ -83,5 +83,44 @@ class Banco {
             return true;
         }
         return false;
+    }
+
+    int confirmaTokenEmail(String token){
+        try {
+            PreparedStatement ps;
+            String query =  "UPDATE user SET tokenCEmail='0' WHERE tokenCEmail=?";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, token);
+            int retorno = ps.executeUpdate();
+            ps.close();
+            return retorno;
+        } catch (SQLException e) {
+            return 0;
+        }
+    }
+
+    boolean checaTokenEmail(String[] form){
+        ResultSet result;
+        try {
+            PreparedStatement ps;
+            String query =  "SELECT * FROM user WHERE nome=? AND senha=?";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[1]);
+            ps.setString(2, form[2]);
+            result = ps.executeQuery();
+            result.next();
+            if(result.getString("tokenCEmail").equals("0")){return false;}
+        } catch (SQLException e) {
+            return true;
+        }
+        return true;
+    }
+
+    public static void main(String[] args) {
+        Banco bdd = new Banco();
+        String formu[] = new String[3];
+        formu[1] = "rafael";
+        formu[2] = "8450e37151204eea2f9c8bcab135ac42f9d7d57d20af4c3010a629a3d95ce88d";
+        System.out.println(bdd.checaTokenEmail(formu));
     }
 }

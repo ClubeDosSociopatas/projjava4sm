@@ -13,17 +13,37 @@ public class Controlador {
     private Banco bd = new Banco();
 
     public String novoUsuario(String[] form){
+        String resultado;
+        if(form.length != 5){return "Erro";}
         if(testeStrings(form)){
             return "Utilização de caracteres especiais fora do campo de senha é proibido.\n";
         }
         if(testarCpf(form[2])){return "CPF inválido.";}
         if(bd.checaCpf(form[2])){return "CPF ja cadastrado.";}
         form[1] = hashingSalt(form[1]);
-        return bd.insereNoBanco(form);
+        byte b[] = new byte[4];
+        try {
+            SecureRandom.getInstanceStrong().nextBytes(b);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        BigInteger number = new BigInteger(1, b);
+        StringBuilder hexString = new StringBuilder(number.toString(16)); 
+        form[4] = hexString.toString();
+        if((resultado = bd.insereNoBanco(form)).equals("Sucesso")){
+            //enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
+        }
+        return resultado;
     }
 
     public String usuarioLogar(String[] form){
-        if(form.length != 3){return "erro";}
+        if(form.length != 3){return "Erro";}
+        if(testeStrings(form)){
+            return "Utilização de caracteres especiais fora do campo de senha é proibido.\n";
+        }
+        form[2] = hashingSalt(form[2]);
+        System.out.println(form[2]);
+        if(bd.checaTokenEmail(form)){return "Por favor, confirme seu email.";}
         byte b[] = new byte[32];
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
@@ -33,12 +53,20 @@ public class Controlador {
         BigInteger number = new BigInteger(1, b);
         StringBuilder hexString = new StringBuilder(number.toString(16)); 
         form[0] = hexString.toString();
-        form[2] = hashingSalt(form[2]);
-        if(bd.insereToken(form) == 1){return form[0];}
-        return "erro";
+        if(bd.insereToken(form) == 1){return "id="+form[0];}
+        return "Falha no Login.";
+    }
+
+    public String confirmarTokenE(String[] form){
+        if(form.length != 1){return "Erro";}
+        if(testeStrings(form)){return "Utilização de caracteres especiais é proibido.\n";}
+        if(bd.confirmaTokenEmail(form[0]) == 1){return "Conta confirmada com sucesso";}
+        return "Token inválido!";
     }
 
     public void usuarioSair(){}
+
+    // FUNCOES LOCAIS //
 
     private boolean testeStrings(String[] form){
         int chrTeste[] = {39, 34, 61, 59, 92};
@@ -47,13 +75,15 @@ public class Controlador {
         int p;
 
         for(i = 0; i < form.length; i++){
-            for(o = 0; o < form[i].length(); o++){
-                for(p = 0; p < chrTeste.length; p++){
-                    if((int)form[i].charAt(o) == chrTeste[p]){
-                        return true;
+            try{
+                for(o = 0; o < form[i].length(); o++){
+                    for(p = 0; p < chrTeste.length; p++){
+                        if((int)form[i].charAt(o) == chrTeste[p]){
+                            return true;
+                        }
                     }
                 }
-            }
+            } catch(NullPointerException e){}
         }
         return false;
     }
@@ -146,10 +176,5 @@ public class Controlador {
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        Controlador ctt = new Controlador();
-        ctt.enviarEmail("rafaselner@hotmail.com", "testeJava", "Esse e um teste de JavaMail");
     }
 }
