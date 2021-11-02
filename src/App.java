@@ -1,16 +1,24 @@
-import server.Controlador;
+// Classes Importadas
 import java.util.Scanner;
+
+import serverr.Controlador;
+
 import java.math.BigInteger; 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest; 
 import java.security.NoSuchAlgorithmException; 
 
+// Classe App/Cliente
 public class App {
+    // Variavel para Sessão / leitura de teclado / classe de controle
     private static String chaveS = "";
     private static Scanner ler = new Scanner(System.in);
     private static Controlador ctrl = new Controlador();
+
+    // Método main
     public static void main(String[] args) throws Exception {
         String leitura;
+        // * MENU PRINCIPAL *
         while(true){
             if(!chaveS.equals("")){menuLogado();}
             System.out.print("- Menu Inicial -\n"+
@@ -32,6 +40,7 @@ public class App {
         }
     }
 
+    // Método para criar conta
     private static void criarConta(){
         String formulario[] = new String[5];
         System.out.print("Nome de Usuario: ");
@@ -50,6 +59,7 @@ public class App {
         System.out.println(ctrl.novoUsuario(formulario));
     }
 
+    // Método para efetuar login na aplicação
     private static void efetuarLogin(){
         String formulario[] = new String[3];
         String resultado;
@@ -59,13 +69,14 @@ public class App {
         formulario[2] = testarSenha(ler.nextLine());
         resultado = ctrl.usuarioLogar(formulario);
         if(resultado.charAt(0) == 'i' && resultado.charAt(1) == 'd'){
-            System.out.println("Logado com Sucesso!\n");
             chaveS = resultado.substring(resultado.indexOf("=")+1);
+            System.out.println("Logado com Sucesso!\n");
             return;
         }
         System.out.println(resultado);
     }
 
+    // Método para entrar com o token de confirmação de e-mail
     private static void confirmaEmail(){
         String formulario[] = new String[1];
         System.out.print("Digite o token recebido: ");
@@ -73,15 +84,16 @@ public class App {
         System.out.println(ctrl.confirmarTokenE(formulario));
     }
 
+    // Método para recuperar a senha por e-mail
     private static void recuperaSenha(){
         String formulario[] = new String[2];
-        String resultado;
         formulario[1] = "";
-        System.out.print("Digite seu email: ");
+        System.out.print("Digite seu email(ou digite 0 para sair): ");
         while(true){
             formulario[1] = ler.nextLine();
-            if((resultado = ctrl.iniciarRecuperarSenha(formulario)).equals("c")){break;}
-            System.out.print(resultado+"\nDigite seu email: ");
+            if(formulario[1].equals("0")){return;}
+            if((ctrl.iniciarRecuperarSenha(formulario)).equals("c")){break;}
+            System.out.print("Digite seu email(ou digite 0 para sair): ");
         }
         System.out.print("Token recebido: ");
         formulario[0] = ler.nextLine();
@@ -92,6 +104,7 @@ public class App {
         System.out.println(ctrl.recuperarSenha(formulario));
     }
 
+    // * MENU USUARIO LOGADO *
     private static void menuLogado(){
         String leitura;
         while(true){
@@ -107,6 +120,8 @@ public class App {
         }
     }
 
+    // Testa a senha pelo seu tamanho, se tem ambos caracteres maisculos e minusculos, se tem caracteres especiais e numeros,
+    // retorna o hash da senha
     private static String testarSenha(String input){
         if(input.length() < 10){return "erro";}
         if(input.toUpperCase() == input || input.toLowerCase() == input){return "erro";}
@@ -130,6 +145,7 @@ public class App {
         return hashing(input);
     }
 
+    // Método para o hashing de senha
     private static String hashing(String input){
         MessageDigest md;
         try {
@@ -148,6 +164,7 @@ public class App {
         return hexString.toString();
     }
 
+    // Método para testar se o cpf é verdadeiro
     private static boolean testarCpf(String input){
         if(input.length() != 11){return true;}
         String testeStr = "1234567890";

@@ -1,17 +1,20 @@
-package server;
+// Classes Importadas
+package serverr;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-
+// Classe Banco de Dados
 class Banco {
+    // Variaveis constantes para conexão ao banco
     private final String con_banco;
     private final String usuario_mysql;
     private final String senha_mysql;
     private Connection conn;
 
+    // Método construtor
     Banco(){
 
         usuario_mysql = "root";
@@ -32,6 +35,7 @@ class Banco {
 
     }
 
+    // Método para inserir um novo usuario no banco
     String insereNoBanco(String[] form){
         try{
             PreparedStatement ps;
@@ -53,10 +57,11 @@ class Banco {
         }
     }
 
+    // Método para inserir um token de sessão em um usuario
     int insereToken(String[] form){
         try{
             PreparedStatement ps;
-            String query =  "UPDATE user SET tokenSessao=? WHERE nome=? AND senha=?";
+            String query =  "UPDATE user SET tokenSessao=? WHERE nome=? AND senha=? AND tokenCEmail='0'";
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
             ps.setString(2, form[1]);
@@ -70,6 +75,7 @@ class Banco {
         }
     }
 
+    // Método para inserir um token de recuperação de senha em um usuario
     int insereRecuperarToken(String[] form){
         try{
             PreparedStatement ps;
@@ -86,6 +92,7 @@ class Banco {
         }
     }
 
+    // Método para mudar a senha de um usuario com o token de mudança
     int mudaSenha(String[] form){
         try{
             PreparedStatement ps;
@@ -102,6 +109,7 @@ class Banco {
         }
     }
 
+    // Checa se o cpf ja esta cadastrado
     boolean checaCpf(String cpf){
         ResultSet result;
         try {
@@ -117,6 +125,7 @@ class Banco {
         return false;
     }
 
+    // Confirma o token de e-mail de um usuario
     int confirmaTokenEmail(String token){
         try {
             PreparedStatement ps;
@@ -129,22 +138,5 @@ class Banco {
         } catch (SQLException e) {
             return 0;
         }
-    }
-
-    boolean checaTokenEmail(String[] form){
-        ResultSet result;
-        try {
-            PreparedStatement ps;
-            String query =  "SELECT * FROM user WHERE nome=? AND senha=?";
-            ps = conn.prepareStatement(query);
-            ps.setString(1, form[1]);
-            ps.setString(2, form[2]);
-            result = ps.executeQuery();
-            result.next();
-            if(result.getString("tokenCEmail").equals("0")){return false;}
-        } catch (SQLException e) {
-            return true;
-        }
-        return true;
     }
 }
