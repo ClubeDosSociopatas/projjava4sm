@@ -16,7 +16,7 @@ public class App {
     private static Controlador ctrl = new Controlador();
 
     // Método main
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String leitura;
         // * MENU PRINCIPAL *
         while(true){
@@ -26,14 +26,19 @@ public class App {
                              "2 - Efetuar Login\n"+
                              "3 - Confirmar email\n"+
                              "4 - Recuperar Senha\n"+
-                             "5 - Sair\n"+
+                             "5 - Informações de Contato\n"+
+                             "6 - Sair\n"+
                              "Entre com sua escolha: ");
             leitura = ler.nextLine();
             if(leitura.equals("1")){criarConta();}
             if(leitura.equals("2")){efetuarLogin();}
             if(leitura.equals("3")){confirmaEmail();}
             if(leitura.equals("4")){recuperaSenha();}
-            if(leitura.equals("5")){
+            if(leitura.equals("5")){System.out.println("-- VaxxBank --\n"+
+                                                       "Email para contato: rafazeteste@gmail.com\n"+
+                                                       "Telefone para atendimento ao cliente: (41) 40557-9353");
+            }
+            if(leitura.equals("6")){
                 System.out.print("Programa Finalizado...");
                 break;
             }
@@ -42,17 +47,17 @@ public class App {
 
     // Método para criar conta
     private static void criarConta(){
-        String formulario[] = new String[5];
+        String[] formulario = new String[5];
         System.out.print("Nome de Usuario: ");
         formulario[0] = ler.nextLine();
         System.out.print("Senha: ");
-        while((formulario[1] = testarSenha(ler.nextLine())) == "erro"){
+        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro")){
             System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nSenha: ");
         }
         System.out.print("CPF: ");
         while(testarCpf(formulario[2] = ler.nextLine())){
             System.out.print("CPF inválido!\nCPF: ");
-        };
+        }
         System.out.print("Email: ");
         formulario[3] = ler.nextLine();
 
@@ -61,7 +66,7 @@ public class App {
 
     // Método para efetuar login na aplicação
     private static void efetuarLogin(){
-        String formulario[] = new String[3];
+        String[] formulario = new String[3];
         String resultado;
         System.out.print("Nome de Usuario: ");
         formulario[1] = ler.nextLine();
@@ -78,7 +83,7 @@ public class App {
 
     // Método para entrar com o token de confirmação de e-mail
     private static void confirmaEmail(){
-        String formulario[] = new String[1];
+        String[] formulario = new String[1];
         System.out.print("Digite o token recebido: ");
         formulario[0] = ler.nextLine();
         System.out.println(ctrl.confirmarTokenE(formulario));
@@ -86,7 +91,7 @@ public class App {
 
     // Método para recuperar a senha por e-mail
     private static void recuperaSenha(){
-        String formulario[] = new String[2];
+        String[] formulario = new String[2];
         formulario[1] = "";
         System.out.print("Digite seu email(ou digite 0 para sair): ");
         while(true){
@@ -98,7 +103,7 @@ public class App {
         System.out.print("Token recebido: ");
         formulario[0] = ler.nextLine();
         System.out.print("Nova Senha: ");
-        while((formulario[1] = testarSenha(ler.nextLine())) == "erro"){
+        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro")){
             System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova Senha: ");
         }
         System.out.println(ctrl.recuperarSenha(formulario));
@@ -109,10 +114,15 @@ public class App {
         String leitura;
         while(true){
             System.out.print("- Menu Logado -\n"+
-                             "1 - Sair\n"+
+                             "1 - Informações para contato\n"+
+                             "2 - Sair\n"+
                              "Entre com sua escolha: ");
             leitura = ler.nextLine();
-            if(leitura.equals("1")){
+            if(leitura.equals("1")){System.out.println("-- VaxxBank --\n"+
+                                                       "Email para contato: rafazeteste@gmail.com\n"+
+                                                       "Telefone para atendimento ao cliente: (41) 40557-9353");
+            }
+            if(leitura.equals("2")){
                 System.out.println("Usuario Desconectado...");
                 chaveS = "";
                 break;
@@ -124,9 +134,10 @@ public class App {
     // retorna o hash da senha
     private static String testarSenha(String input){
         if(input.length() < 10){return "erro";}
-        if(input.toUpperCase() == input || input.toLowerCase() == input){return "erro";}
+        if(input.toUpperCase().equals(input) || input.toLowerCase().equals(input)){return "erro";}
         String chrSpecTest = "!@#$%&.,";
-        int i, o;
+        int i;
+        int o;
         boolean testeStr = true;
         for(i = 0; i < input.length(); i++){
             for(o = 0; o < chrSpecTest.length(); o++){
@@ -154,7 +165,7 @@ public class App {
             e.printStackTrace();
             return "erro";
         }
-        byte hash[] = md.digest(input.getBytes(StandardCharsets.UTF_8));
+        byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
         BigInteger number = new BigInteger(1, hash);
   
         StringBuilder hexString = new StringBuilder(number.toString(16)); 
@@ -169,7 +180,8 @@ public class App {
         if(input.length() != 11){return true;}
         String testeStr = "1234567890";
         boolean teste;
-        int i, o;
+        int i;
+        int o;
         for(i = 0; i < input.length(); i++){
             teste = false;
             for(o = 0; o < testeStr.length(); o++){
@@ -195,7 +207,6 @@ public class App {
             peso--;
         }
         int dig2 = (11 - (soma % 11));
-        if(!(((dig2 == 10 || dig2 == 11)&& Character.getNumericValue(input.charAt(10)) == 0) || dig2 == Character.getNumericValue(input.charAt(10)))){return true;}
-        return false;
+        return (!(((dig2 == 10 || dig2 == 11)&& Character.getNumericValue(input.charAt(10)) == 0) || dig2 == Character.getNumericValue(input.charAt(10))));
     }
 }

@@ -29,16 +29,12 @@ class Banco {
         catch(SQLException ex) {
             ex.printStackTrace();
         }
-        catch(Exception ex) {
-            ex.printStackTrace();
-        }
-
     }
 
     // Método para inserir um novo usuario no banco
     String insereNoBanco(String[] form){
+        PreparedStatement ps = null;
         try{
-            PreparedStatement ps;
             String query =  "INSERT INTO user (id, nome, senha, cpf, email, tokenCEmail, tokenSenha) VALUES (0, ?, ?, ?, ?, ?, '0')";
 
             ps = conn.prepareStatement(query);
@@ -55,12 +51,17 @@ class Banco {
         catch(SQLException ex) {
             return "Erro";
         }
+        finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
     }
 
     // Método para inserir um token de sessão em um usuario
     int insereToken(String[] form){
+        PreparedStatement ps = null;
         try{
-            PreparedStatement ps;
             String query =  "UPDATE user SET tokenSessao=? WHERE nome=? AND senha=? AND tokenCEmail='0'";
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
@@ -72,13 +73,18 @@ class Banco {
         }
         catch(SQLException ex) {
             return 0;
-        }
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        
     }
 
     // Método para inserir um token de recuperação de senha em um usuario
     int insereRecuperarToken(String[] form){
+        PreparedStatement ps = null;
         try{
-            PreparedStatement ps;
             String query =  "UPDATE user SET tokenSenha=? WHERE email=?";
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
@@ -89,13 +95,17 @@ class Banco {
         }
         catch(SQLException ex) {
             return 0;
-        }
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
     }
 
     // Método para mudar a senha de um usuario com o token de mudança
     int mudaSenha(String[] form){
+        PreparedStatement ps = null;
         try{
-            PreparedStatement ps;
             String query =  "UPDATE user SET tokenSenha='0', senha=? WHERE tokenSenha=?";
             ps = conn.prepareStatement(query);
             ps.setString(1, form[1]);
@@ -106,14 +116,18 @@ class Banco {
         }
         catch(SQLException ex) {
             return 0;
-        }
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
     }
 
     // Checa se o cpf ja esta cadastrado
     boolean checaCpf(String cpf){
         ResultSet result;
+        PreparedStatement ps = null;
         try {
-            PreparedStatement ps;
             String query =  "SELECT * FROM user WHERE cpf=?";
             ps = conn.prepareStatement(query);
             ps.setString(1, cpf);
@@ -121,14 +135,18 @@ class Banco {
             if(result.next()){return true;}
         } catch (SQLException e) {
             return true;
-        }
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
         return false;
     }
 
     // Confirma o token de e-mail de um usuario
     int confirmaTokenEmail(String token){
+        PreparedStatement ps = null;
         try {
-            PreparedStatement ps;
             String query =  "UPDATE user SET tokenCEmail='0' WHERE tokenCEmail=?";
             ps = conn.prepareStatement(query);
             ps.setString(1, token);
@@ -137,6 +155,10 @@ class Banco {
             return retorno;
         } catch (SQLException e) {
             return 0;
-        }
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
     }
 }

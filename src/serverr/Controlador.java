@@ -20,7 +20,6 @@ public class Controlador {
 
     // Método para criar um novo usuario
     public String novoUsuario(String[] form){
-        String resultado;
         if(form.length != 5){return "Erro";}
         if(testeStrings(form)){
             return "Utilização de caracteres especiais fora do campo de senha é proibido.\n";
@@ -28,7 +27,7 @@ public class Controlador {
         if(testarCpf(form[2])){return "CPF inválido.";}
         if(bd.checaCpf(form[2])){return "CPF ja cadastrado.";}
         form[1] = hashingSalt(form[1]);
-        byte b[] = new byte[4];
+        byte[] b = new byte[4];
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
@@ -40,10 +39,11 @@ public class Controlador {
             hexString.insert(0, '0'); 
         }
         form[4] = hexString.toString();
-        if((resultado = bd.insereNoBanco(form)).equals("Sucesso")){
+        if(bd.insereNoBanco(form).equals("Sucesso")){
             enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
+            return "Sucesso";
         }
-        return resultado;
+        return "Erro";
     }
 
     // Método para logar um usuario, se tiver sucesso retorna a chave de sessão para o usuario
@@ -53,7 +53,7 @@ public class Controlador {
             return "Utilização de caracteres especiais fora do campo de senha é proibido.\n";
         }
         form[2] = hashingSalt(form[2]);
-        byte b[] = new byte[32];
+        byte[] b = new byte[32];
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
@@ -83,7 +83,7 @@ public class Controlador {
         if(form.length != 2){return "Erro";}
         if(form[1].equals("")){return "";}
         if(testeStrings(form)){return "Utilização de caracteres especiais é proibido.\n";}
-        byte b[] = new byte[16];
+        byte[] b = new byte[16];
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
@@ -118,7 +118,7 @@ public class Controlador {
 
     // Testa formularios recebidos, procura por caracteres especiais
     private boolean testeStrings(String[] form){
-        int chrTeste[] = {39, 34, 61, 59, 92};
+        int[] chrTeste = {39, 34, 61, 59, 92};
         int i;
         int o;
         int p;
@@ -127,12 +127,14 @@ public class Controlador {
             try{
                 for(o = 0; o < form[i].length(); o++){
                     for(p = 0; p < chrTeste.length; p++){
-                        if((int)form[i].charAt(o) == chrTeste[p]){
+                        if(form[i].charAt(o) == chrTeste[p]){
                             return true;
                         }
                     }
                 }
-            } catch(NullPointerException e){}
+            } catch(NullPointerException e){
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -147,7 +149,7 @@ public class Controlador {
             return "erro";
         }
         input = input + "4PROGRAMA-SEGURO_SSS4";
-        byte hash[] = md.digest(input.getBytes(StandardCharsets.UTF_8));
+        byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
         BigInteger number = new BigInteger(1, hash);
   
         StringBuilder hexString = new StringBuilder(number.toString(16)); 
@@ -162,7 +164,8 @@ public class Controlador {
         if(input.length() != 11){return true;}
         String testeStr = "1234567890";
         boolean teste;
-        int i, o;
+        int i;
+        int o;
         for(i = 0; i < input.length(); i++){
             teste = false;
             for(o = 0; o < testeStr.length(); o++){
@@ -188,8 +191,7 @@ public class Controlador {
             peso--;
         }
         int dig2 = (11 - (soma % 11));
-        if(!(((dig2 == 10 || dig2 == 11)&& Character.getNumericValue(input.charAt(10)) == 0) || dig2 == Character.getNumericValue(input.charAt(10)))){return true;}
-        return false;
+        return (!(((dig2 == 10 || dig2 == 11)&& Character.getNumericValue(input.charAt(10)) == 0) || dig2 == Character.getNumericValue(input.charAt(10))));
     }
 
     // Método para enviar e-mail
@@ -205,6 +207,7 @@ public class Controlador {
         
         Session session = Session.getInstance(prop,
                 new javax.mail.Authenticator() {
+                    @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(username, password);
                     }
