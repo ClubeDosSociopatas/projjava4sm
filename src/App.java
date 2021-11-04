@@ -27,7 +27,7 @@ public class App {
                              "3 - Confirmar email\n"+
                              "4 - Recuperar Senha\n"+
                              "5 - Informações de Contato\n"+
-                             "6 - Sair\n"+
+                             "0 - Sair\n"+
                              "Entre com sua escolha: ");
             leitura = ler.nextLine();
             if(leitura.equals("1")){criarConta();}
@@ -35,12 +35,12 @@ public class App {
             if(leitura.equals("3")){confirmaEmail();}
             if(leitura.equals("4")){recuperaSenha();}
             if(leitura.equals("5")){System.out.println("-- VaxxBank --\n"+
-                                                       "Email para contato: rafazeteste@gmail.com\n"+
-                                                       "Telefone para atendimento ao cliente: (41) 40557-9353");
+            "Email para contato: rafazeteste@gmail.com\n"+
+            "Telefone para atendimento ao cliente: (41) 40557-9353");
             }
-            if(leitura.equals("6")){
-                System.out.print("Programa Finalizado...");
-                break;
+            if(leitura.equals("0")){
+            System.out.print("Programa Finalizado...");
+            break;
             }
         }
     }
@@ -114,21 +114,84 @@ public class App {
         String leitura;
         while(true){
             System.out.print("- Menu Logado -\n"+
-                             "1 - Informações para contato\n"+
-                             "2 - Sair\n"+
-                             "Entre com sua escolha: ");
+                            "1 - Informações de usuario\n"+
+                            "2 - Informações para contato\n"+
+                            "0 - Sair\n"+
+                            "Entre com sua escolha: ");
             leitura = ler.nextLine();
-            if(leitura.equals("1")){System.out.println("-- VaxxBank --\n"+
-                                                       "Email para contato: rafazeteste@gmail.com\n"+
-                                                       "Telefone para atendimento ao cliente: (41) 40557-9353");
+            if(leitura.equals("1")){menuInfoUsu();}
+            if(leitura.equals("2")){System.out.println("-- VaxxBank --\n"+
+                                                    "Email para contato: rafazeteste@gmail.com\n"+
+                                                    "Telefone para atendimento ao cliente: (41) 40557-9353");
             }
-            if(leitura.equals("2")){
+            if(leitura.equals("0")){
                 System.out.println("Usuario Desconectado...");
                 chaveS = "";
                 break;
             }
         }
     }
+
+    // * MENU INFORMAÇÕES USUARIO *
+    private static void menuInfoUsu(){
+        String[] form = new String[1];
+        form[0] = chaveS;
+        String[] dados = ctrl.dadosUsuario(form);
+        String leitura = "";
+        while(true){
+            System.out.print("- Dados de Usuario -\n"+
+                            "Nome: "+dados[0]+"\n"+
+                            "email: "+dados[1]+"\n"+
+                            "CPF: "+dados[2]+"\n"+
+                            "1 - Mudar seu email\n"+
+                            "2 - Mudar sua senha\n"+
+                            "0 - Sair\n"+
+                            "Entre com sua escolha: ");
+            leitura = ler.nextLine();
+            if(leitura.equals("1")){
+                mudarEmail();
+            }
+            if(leitura.equals("2")){
+                mudarSenha();
+            }
+            if(leitura.equals("0")){
+                break;
+            }
+        }
+    }
+
+    // Método para mudar email
+    private static void mudarEmail(){
+        String[] formulario = new String[2];
+        formulario[1] = chaveS;
+        if(ctrl.comecaMudancaEmail(formulario).equals("Erro")){return;}
+        System.out.print("Token recebido: ");
+        formulario[0] = ler.nextLine();
+        System.out.print("Nova e-mail: ");
+        formulario[1] = ler.nextLine();
+        System.out.println(ctrl.mudaEmail(formulario));
+    }
+
+    // Método para mudar senha
+    private static void mudarSenha(){
+        String[] formulario = new String[3];
+        String resultado;
+        System.out.print("Senha atual: ");
+        formulario[0] = testarSenha(ler.nextLine());
+        System.out.print("Nova senha: ");
+        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro")){
+            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova senha: ");
+        }
+        formulario[2] = chaveS;
+        resultado = ctrl.mudaSenha(formulario);
+        if(resultado.charAt(0) == 'i' && resultado.charAt(1) == 'd'){
+            chaveS = resultado.substring(resultado.indexOf("=")+1);
+            System.out.println("Logado com Sucesso!\n");
+            return;
+        }
+        System.out.println(resultado);
+    }
+
 
     // Testa a senha pelo seu tamanho, se tem ambos caracteres maisculos e minusculos, se tem caracteres especiais e numeros,
     // retorna o hash da senha

@@ -3,6 +3,8 @@ package serverr;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.math.BigInteger; 
 import java.nio.charset.StandardCharsets;
 import javax.mail.*;
@@ -40,7 +42,7 @@ public class Controlador {
         }
         form[4] = hexString.toString();
         if(bd.insereNoBanco(form).equals("Sucesso")){
-            enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
+            //enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
             return "Sucesso";
         }
         return "Erro";
@@ -104,13 +106,55 @@ public class Controlador {
 
     // Método para recuperar a senha
     public String recuperarSenha(String[] form){
-        if(form.length != 2){return "Erro";}
-        if(form[0].length() < 32){return "Erro";}
+        if(form.length != 2 || form[0].length() < 32){return "Erro";}
         if(testeStrings(form)){return "Utilização de caracteres especiais é proibido.\n";}
         form[1] = hashingSalt(form[1]);
-        if(bd.mudaSenha(form) == 1){return "Sucesso!";}
+        if(bd.mudaSenhaComToken(form) == 1){return "Sucesso!";}
         return "Erro";
     }
+
+    // Método para retornar dados do usuario
+    public String[] dadosUsuario(String[] form){
+        if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return new String[1];}
+        return bd.infoUsuario(form[0]);
+    }
+
+    public String comecaMudancaEmail(String[] form){
+        if(form.length != 2 || form[1].length() < 64 || testeStrings(form)){return "Erro";}
+        byte[] b = new byte[16];
+        try {
+            SecureRandom.getInstanceStrong().nextBytes(b);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        BigInteger number = new BigInteger(1, b);
+        StringBuilder hexString = new StringBuilder(number.toString(16));
+        while (hexString.length() < 32) { 
+            hexString.insert(0, '0'); 
+        } 
+        form[0] = hexString.toString();
+        if(bd.insereTokenMudaEmail(form) == 1){
+            //enviarEmail(form[1], "Mudança de email", "Utilize o código: "+form[0]+"\nPara mudar seu email");
+            return "Sucesso!";
+        }
+        return "Erro";
+    }
+
+    public String mudaEmail(String[] form){
+        if(form.length != 2 || testeStrings(form) || form[0].length() < 32){return "Erro";}
+        if(bd.mudaEmail(form) == 0){return "Erro";}
+        return "Sucesso!";
+    }
+
+    public String mudaSenha(String[] form){
+        if(form.length != 3 || testeStrings(form)){return "Erro";}
+        form[0] = hashingSalt(form[0]);
+        form[1] = hashingSalt(form[1]);
+        if(bd.mudaSenha(form) == 0){return "Erro, senha incorreta";}
+        return "Sucesso!";
+    }
+
+    // Método para
 
     public void usuarioSair(){}
 
@@ -133,7 +177,6 @@ public class Controlador {
                     }
                 }
             } catch(NullPointerException e){
-                e.printStackTrace();
             }
         }
         return false;
