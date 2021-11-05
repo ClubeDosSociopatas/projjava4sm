@@ -3,8 +3,6 @@ package serverr;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.math.BigInteger; 
 import java.nio.charset.StandardCharsets;
 import javax.mail.*;
@@ -33,7 +31,7 @@ public class Controlador {
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            return "Erro";
         }
         BigInteger number = new BigInteger(1, b);
         StringBuilder hexString = new StringBuilder(number.toString(16)); 
@@ -59,7 +57,7 @@ public class Controlador {
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            return "Erro";
         }
         BigInteger number = new BigInteger(1, b);
         StringBuilder hexString = new StringBuilder(number.toString(16));
@@ -89,7 +87,7 @@ public class Controlador {
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            return "Erro";
         }
         BigInteger number = new BigInteger(1, b);
         StringBuilder hexString = new StringBuilder(number.toString(16));
@@ -125,7 +123,7 @@ public class Controlador {
         try {
             SecureRandom.getInstanceStrong().nextBytes(b);
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            return "Erro";
         }
         BigInteger number = new BigInteger(1, b);
         StringBuilder hexString = new StringBuilder(number.toString(16));
@@ -177,6 +175,7 @@ public class Controlador {
                     }
                 }
             } catch(NullPointerException e){
+                return false;
             }
         }
         return false;
@@ -188,7 +187,6 @@ public class Controlador {
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
             return "erro";
         }
         input = input + "4PROGRAMA-SEGURO_SSS4";
@@ -238,9 +236,9 @@ public class Controlador {
     }
 
     // Método para enviar e-mail
-    private void enviarEmail(String emailD, String assunto, String conteudo){
-        final String username = "rafazeteste@gmail.com";
-        final String password = "TeStandoHU1234";
+    private boolean enviarEmail(String emailD, String assunto, String conteudo){
+        final String username_email = "rafazeteste@gmail.com";
+        final String password_email = "TeStandoHU1234";
 
         Properties prop = new Properties();
 		prop.put("mail.smtp.host", "smtp.gmail.com");
@@ -252,7 +250,7 @@ public class Controlador {
                 new javax.mail.Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
+                        return new PasswordAuthentication(username_email, password_email);
                     }
                 });
 
@@ -269,7 +267,8 @@ public class Controlador {
 
             Transport.send(message);
         } catch (MessagingException e) {
-            e.printStackTrace();
+            return false;
         }
+        return true;
     }
 }
