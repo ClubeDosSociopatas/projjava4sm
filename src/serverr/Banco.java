@@ -3,6 +3,7 @@ package serverr;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -44,7 +45,6 @@ class Banco {
             ps.setString(4, form[3]);
             ps.setString(5, form[4]);
             ps.executeUpdate();
-            ps.close();
 
             return "Sucesso";
         }
@@ -67,9 +67,7 @@ class Banco {
             ps.setString(1, form[0]);
             ps.setString(2, form[1]);
             ps.setString(3, form[2]);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         }
         catch(SQLException ex) {
             return 0;
@@ -89,9 +87,7 @@ class Banco {
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
             ps.setString(2, form[1]);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         }
         catch(SQLException ex) {
             return 0;
@@ -110,9 +106,7 @@ class Banco {
             ps = conn.prepareStatement(query);
             ps.setString(1, form[1]);
             ps.setString(2, form[0]);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         }
         catch(SQLException ex) {
             return 0;
@@ -150,9 +144,7 @@ class Banco {
             String query =  "UPDATE user SET tokenCEmail='0' WHERE tokenCEmail=?";
             ps = conn.prepareStatement(query);
             ps.setString(1, token);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         } catch (SQLException e) {
             return 0;
         }finally{try {
@@ -185,7 +177,7 @@ class Banco {
         } catch (SQLException e) {
             e.printStackTrace();
         }}
-        return null;
+        return new String[0];
     }
 
     // Método para inserir um token de recuperação de senha em um usuario
@@ -196,9 +188,7 @@ class Banco {
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
             ps.setString(2, form[1]);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         }
         catch(SQLException ex) {
             return 0;
@@ -217,9 +207,7 @@ class Banco {
             ps = conn.prepareStatement(query);
             ps.setString(1, form[1]);
             ps.setString(2, form[0]);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         } catch (SQLException e) {
             return 0;
         }finally{try {
@@ -238,9 +226,7 @@ class Banco {
             ps.setString(1, form[1]);
             ps.setString(2, form[0]);
             ps.setString(3, form[2]);
-            int retorno = ps.executeUpdate();
-            ps.close();
-            return retorno;
+            return ps.executeUpdate();
         } catch (SQLException e) {
             return 0;
         }finally{try {
@@ -248,5 +234,80 @@ class Banco {
         } catch (SQLException e) {
             e.printStackTrace();
         }}
+    }
+
+    // Retorna as vacinas
+    ArrayList<String> selecionaVacinas(){
+        ArrayList<String> vacinas = new ArrayList<>();
+        ResultSet result;
+        PreparedStatement ps = null;
+        try {
+            String query =  "SELECT * FROM vacina";
+            ps = conn.prepareStatement(query);
+            result = ps.executeQuery();
+            while(result.next()){
+                vacinas.add(Integer.toString(result.getInt("id"))+"&"+
+                            result.getString("nome")+"&"+
+                            Integer.toString(result.getInt("validade"))+"&"+
+                            result.getString("descricao"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        return vacinas;
+    }
+
+    // Agenda uma vacina
+    String agendaVacina(String[] form){
+        PreparedStatement ps = null;
+        try{
+            String query =  "INSERT INTO pessoaVacina (vacinaId, dataAplicar, userId) VALUES (?, ?, (SELECT id FROM user WHERE tokenSessao=?))";
+
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, Integer.parseInt(form[0]));
+            ps.setString(2, form[1]);
+            ps.setString(3, form[2]);
+            ps.executeUpdate();
+
+            return "Sucesso";
+        }
+        catch(SQLException ex) {
+            return "Erro";
+        }
+        finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+    }
+
+    // Retorna vacinas agendadas pelo usuario
+    ArrayList<String> retornaCarteirinha(String[] form){
+        ArrayList<String> vacinas = new ArrayList<>();
+        ResultSet result;
+        PreparedStatement ps = null;
+        try {
+            String query =  "SELECT pv.id, va.nome, pv.dataAplicar, va.descricao FROM user AS us INNER JOIN pessoaVacina AS pv ON us.id = pv.userId AND us.tokenSessao=? INNER JOIN vacina AS va ON pv.vacinaId = va.id";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[0]);
+            result = ps.executeQuery();
+            while(result.next()){
+                vacinas.add(Integer.toString(result.getInt("id"))+"&"+
+                            result.getString("nome")+"&"+
+                            result.getString("dataAplicar")+"&"+
+                            result.getString("descricao"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        return vacinas;
     }
 }

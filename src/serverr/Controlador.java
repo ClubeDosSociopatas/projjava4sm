@@ -9,6 +9,11 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import com.mysql.cj.result.LocalDateTimeValueFactory;
+
+import java.time.LocalDateTime;
+
+import java.util.ArrayList;
 import java.util.Properties;
 
 // Classe Controlador/Servidor
@@ -152,8 +157,55 @@ public class Controlador {
         return "Sucesso!";
     }
 
-    // Método para
+    // Método para retornar vacinas
+    public String[] recebeVacinas(){
+        ArrayList<String> vacinas = bd.selecionaVacinas();
+        String[] listaVacinas = new String[vacinas.size()];
+        int i;
+        for(i = 0; i < listaVacinas.length; i++){
+            listaVacinas[i] = vacinas.get(i);
+        }
+        System.out.println(listaVacinas.length+"<--StrL||Arr-->"+vacinas.size());
+        System.out.println("AIJSDIJKHANSUDIHASIDKHAJSKSALKDJALS");
+        return listaVacinas;
+    }
 
+    public String agendarVacina(String[] form){
+        if(form.length != 3 || form[2].length() < 64 || testeStrings(form)){return "Erro";}
+        try{
+            String[] data = form[1].split("-")[0].split("/");
+            String[] horario = form[1].split("-")[1].split(":");
+            LocalDateTime dataAgendada = LocalDateTime.of(Integer.parseInt(data[2]),
+                                                          Integer.parseInt(data[1]),
+                                                          Integer.parseInt(data[0]),
+                                                          Integer.parseInt(horario[0]),
+                                                          Integer.parseInt(horario[1]));
+            LocalDateTime dataTeste = LocalDateTime.now().plusDays(1);
+            if(dataAgendada.isBefore(dataTeste)){
+                return "O agendamento só pode ser feito com no mínimo 1 dia de antecedência";
+            }
+            dataTeste = dataTeste.plusDays(29);
+            if(dataAgendada.isAfter(dataTeste)){
+                return "O agendamento só pode ser feito com no máximo 30 dias de antecedência";
+            }
+        } catch(Exception ex){
+            return "Data inválida!";
+        }
+        return bd.agendaVacina(form);
+    }
+
+    public String[] recebeCarteirinha(String[] form){
+        if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return new String[0];}
+        ArrayList<String> vacinas = bd.retornaCarteirinha(form);
+        String[] listaVacinas = new String[vacinas.size()];
+        int i;
+        for(i = 0; i < listaVacinas.length; i++){
+            listaVacinas[i] = vacinas.get(i);
+        }
+        return listaVacinas;
+    }
+
+    // Método para deslogar usuario
     public void usuarioSair(){}
 
     // MÉTODOS LOCAIS //

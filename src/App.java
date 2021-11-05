@@ -114,13 +114,17 @@ public class App {
         String leitura;
         while(true){
             System.out.print("- Menu Logado -\n"+
-                            "1 - Informações de usuario\n"+
-                            "2 - Informações para contato\n"+
-                            "0 - Sair\n"+
-                            "Entre com sua escolha: ");
+                             "1 - Catálogo de vacinas\n"+
+                             "2 - Visualizar carteirinha de vacinação\n"+
+                             "3 - Informações de usuario\n"+
+                             "4 - Informações para contato\n"+
+                             "0 - Sair\n"+
+                             "Entre com sua escolha: ");
             leitura = ler.nextLine();
-            if(leitura.equals("1")){menuInfoUsu();}
-            if(leitura.equals("2")){System.out.println("-- VaxxBank --\n"+
+            if(leitura.equals("1")){agendarVacina();}
+            if(leitura.equals("2")){visualizarCarteirinha();}
+            if(leitura.equals("3")){menuInfoUsu();}
+            if(leitura.equals("4")){System.out.println("-- VaxxBank --\n"+
                                                     "Email para contato: rafazeteste@gmail.com\n"+
                                                     "Telefone para atendimento ao cliente: (41) 40557-9353");
             }
@@ -132,6 +136,54 @@ public class App {
         }
     }
 
+    // Método de agendar vacinas
+    private static void agendarVacina(){
+        String[] formulario = new String[3];
+        formulario[0] = "-1";
+        formulario[2] = chaveS;
+
+        String[] vacinas = ctrl.recebeVacinas();
+        int i;
+        System.out.println(vacinas.length);
+        System.out.print("- Vacinas disponiveis -\n"+
+                         "ID |         Nome         | Validade | Descrição\n");
+        for(i = 0; i < vacinas.length; i++){
+            String[] vacinaAtual = vacinas[i].split("&");
+            System.out.println(String.format("%-3s|", vacinaAtual[0])+
+                               String.format("%-22s|", vacinaAtual[1])+
+                               String.format("%-10s|", vacinaAtual[2])+
+                               vacinaAtual[3]);
+        }
+
+        while(Integer.parseInt(formulario[0]) < 0 || Integer.parseInt(formulario[0]) > vacinas.length){
+            System.out.print("Entre com o id da vacina que deseja agendar(0 para voltar): ");
+            formulario[0] = ler.nextLine();
+            if(formulario[0].equals("0")){return;}
+        }
+        System.out.print("Entre com a data(dd/mm/aaaa): ");
+        formulario[1] = ler.nextLine();
+        System.out.print("Entre com o horario(hh:mm): ");
+        formulario[1] = formulario[1] +"-"+ ler.nextLine();
+        System.out.println(ctrl.agendarVacina(formulario));
+    }
+
+    // Método para visualizar carteirinha de vacinação
+    private static void visualizarCarteirinha(){
+        String[] formulario = new String[1];
+        formulario[0] = chaveS;
+        String[] vacinas = ctrl.recebeCarteirinha(formulario);
+        int i;
+        System.out.print("- Vacinas agendadas/aplicadas -\n"+
+                         "ID   |         Nome         |  Data Agendada  | Descrição\n");
+        for(i = 0; i < vacinas.length; i++){
+            String[] vacinaAtual = vacinas[i].split("&");
+            System.out.println(String.format("%-5s|", vacinaAtual[0])+
+                               String.format("%-22s|", vacinaAtual[1])+
+                               String.format("%-17s|", vacinaAtual[2])+
+                               vacinaAtual[3]);
+        }
+    }
+
     // * MENU INFORMAÇÕES USUARIO *
     private static void menuInfoUsu(){
         String[] form = new String[1];
@@ -139,14 +191,14 @@ public class App {
         String[] dados = ctrl.dadosUsuario(form);
         String leitura = "";
         while(true){
-            System.out.print("- Dados de Usuario -\n"+
-                            "Nome: "+dados[0]+"\n"+
-                            "email: "+dados[1]+"\n"+
-                            "CPF: "+dados[2]+"\n"+
-                            "1 - Mudar seu email\n"+
-                            "2 - Mudar sua senha\n"+
-                            "0 - Sair\n"+
-                            "Entre com sua escolha: ");
+            System.out.print("- Menu de Usuario -\n"+
+                             "Nome: "+dados[0]+"\n"+
+                             "email: "+dados[1]+"\n"+
+                             "CPF: "+dados[2]+"\n"+
+                             "1 - Mudar seu email\n"+
+                             "2 - Mudar sua senha\n"+
+                             "0 - Sair\n"+
+                             "Entre com sua escolha: ");
             leitura = ler.nextLine();
             if(leitura.equals("1")){
                 mudarEmail();
