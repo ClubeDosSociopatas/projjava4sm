@@ -21,7 +21,7 @@ public class App {
         // * MENU PRINCIPAL *
         while(true){
             if(!chaveS.equals("")){menuLogado();}
-            System.out.print("- Menu Inicial -\n"+
+            System.out.print("\n- Menu Inicial -\n"+
                              "1 - Criar Conta\n"+
                              "2 - Efetuar Login\n"+
                              "3 - Confirmar email\n"+
@@ -39,8 +39,8 @@ public class App {
             "Telefone para atendimento ao cliente: (41) 40557-9353");
             }
             if(leitura.equals("0")){
-            System.out.print("Programa Finalizado...");
-            break;
+                System.out.println("Programa Finalizado...");
+                break;
             }
         }
     }
@@ -50,12 +50,14 @@ public class App {
         String[] formulario = new String[5];
         System.out.print("Nome de Usuario: ");
         formulario[0] = ler.nextLine();
-        System.out.print("Senha: ");
-        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro")){
-            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nSenha: ");
+        System.out.print("Senha(digite '0' para voltar): ");
+        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro") || formulario[1].equals("0")){
+            if(formulario[1].equals("0")){return;}
+            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nSenha(digite '0' para voltar): ");
         }
-        System.out.print("CPF: ");
+        System.out.print("CPF(digite '0' para voltar): ");
         while(testarCpf(formulario[2] = ler.nextLine())){
+            if(formulario[2].equals("0")){return;}
             System.out.print("CPF inválido!\nCPF: ");
         }
         System.out.print("Email: ");
@@ -75,7 +77,7 @@ public class App {
         resultado = ctrl.usuarioLogar(formulario);
         if(resultado.charAt(0) == 'i' && resultado.charAt(1) == 'd'){
             chaveS = resultado.substring(resultado.indexOf("=")+1);
-            System.out.println("Logado com Sucesso!\n");
+            System.out.println("Logado com Sucesso!");
             return;
         }
         System.out.println(resultado);
@@ -102,9 +104,10 @@ public class App {
         }
         System.out.print("Token recebido: ");
         formulario[0] = ler.nextLine();
-        System.out.print("Nova Senha: ");
-        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro")){
-            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova Senha: ");
+        System.out.print("Nova Senha(digite '0' para voltar): ");
+        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro") || formulario[1].equals("0")){
+            if(formulario[1].equals("0")){return;}
+            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova Senha(digite '0' para voltar): ");
         }
         System.out.println(ctrl.recuperarSenha(formulario));
     }
@@ -113,7 +116,7 @@ public class App {
     private static void menuLogado(){
         String leitura;
         while(true){
-            System.out.print("- Menu Logado -\n"+
+            System.out.print("\n- Menu Logado -\n"+
                              "1 - Catálogo de vacinas\n"+
                              "2 - Visualizar carteirinha de vacinação\n"+
                              "3 - Informações de usuario\n"+
@@ -129,6 +132,10 @@ public class App {
                                                     "Telefone para atendimento ao cliente: (41) 40557-9353");
             }
             if(leitura.equals("0")){
+                String[] formulario = new String[1];
+                formulario[0] = chaveS;
+                int i;
+                for(i = 0; i < 10 && ctrl.usuarioSair(formulario); i++);
                 System.out.println("Usuario Desconectado...");
                 chaveS = "";
                 break;
@@ -145,7 +152,7 @@ public class App {
         String[] vacinas = ctrl.recebeVacinas();
         int i;
         System.out.println(vacinas.length);
-        System.out.print("- Vacinas disponiveis -\n"+
+        System.out.print("\n- Vacinas disponiveis -\n"+
                          "ID |         Nome         | Validade | Descrição\n");
         for(i = 0; i < vacinas.length; i++){
             String[] vacinaAtual = vacinas[i].split("&");
@@ -173,7 +180,7 @@ public class App {
         formulario[0] = chaveS;
         String[] vacinas = ctrl.recebeCarteirinha(formulario);
         int i;
-        System.out.print("- Vacinas agendadas/aplicadas -\n"+
+        System.out.print("\n- Vacinas agendadas/aplicadas -\n"+
                          "ID   |         Nome         |  Data Agendada  | Descrição\n");
         for(i = 0; i < vacinas.length; i++){
             String[] vacinaAtual = vacinas[i].split("&");
@@ -191,7 +198,7 @@ public class App {
         String[] dados = ctrl.dadosUsuario(form);
         String leitura = "";
         while(true){
-            System.out.print("- Menu de Usuario -\n"+
+            System.out.print("\n- Menu de Usuario -\n"+
                              "Nome: "+dados[0]+"\n"+
                              "email: "+dados[1]+"\n"+
                              "CPF: "+dados[2]+"\n"+
@@ -230,9 +237,10 @@ public class App {
         String resultado;
         System.out.print("Senha atual: ");
         formulario[0] = testarSenha(ler.nextLine());
-        System.out.print("Nova senha: ");
-        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro")){
-            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova senha: ");
+        System.out.print("Nova senha(digite '0' para voltar): ");
+        while((formulario[1] = testarSenha(ler.nextLine())).equals("erro") || formulario[1].equals("0")){
+            if(formulario[1].equals("0")){return;}
+            System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova senha(digite '0' para voltar): ");
         }
         formulario[2] = chaveS;
         resultado = ctrl.mudaSenha(formulario);
@@ -248,6 +256,7 @@ public class App {
     // Testa a senha pelo seu tamanho, se tem ambos caracteres maisculos e minusculos, se tem caracteres especiais e numeros,
     // retorna o hash da senha
     private static String testarSenha(String input){
+        if(input.equals("0")){return input;}
         if(input.length() < 10){return "erro";}
         if(input.toUpperCase().equals(input) || input.toLowerCase().equals(input)){return "erro";}
         String chrSpecTest = "!@#$%&.,";

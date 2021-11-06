@@ -9,8 +9,6 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import com.mysql.cj.result.LocalDateTimeValueFactory;
-
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -30,7 +28,7 @@ public class Controlador {
             return "Utilização de caracteres especiais fora do campo de senha é proibido.\n";
         }
         if(testarCpf(form[2])){return "CPF inválido.";}
-        if(bd.checaCpf(form[2])){return "CPF ja cadastrado.";}
+        if(bd.checaDados(form)){return "CPF/E-mail ja cadastrados.";}
         form[1] = hashingSalt(form[1]);
         byte[] b = new byte[4];
         try {
@@ -165,8 +163,6 @@ public class Controlador {
         for(i = 0; i < listaVacinas.length; i++){
             listaVacinas[i] = vacinas.get(i);
         }
-        System.out.println(listaVacinas.length+"<--StrL||Arr-->"+vacinas.size());
-        System.out.println("AIJSDIJKHANSUDIHASIDKHAJSKSALKDJALS");
         return listaVacinas;
     }
 
@@ -206,7 +202,10 @@ public class Controlador {
     }
 
     // Método para deslogar usuario
-    public void usuarioSair(){}
+    public boolean usuarioSair(String[] form){
+        if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return true;}
+        return (bd.limpaSessao(form[0]) == 0);
+    }
 
     // MÉTODOS LOCAIS //
 

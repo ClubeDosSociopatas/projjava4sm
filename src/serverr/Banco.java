@@ -32,6 +32,27 @@ class Banco {
         }
     }
 
+    // Checa se o cpf ja esta cadastrado
+    boolean checaDados(String[] form){
+        ResultSet result;
+        PreparedStatement ps = null;
+        try {
+            String query =  "SELECT * FROM user WHERE cpf=? OR email=?";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[2]);
+            ps.setString(2, form[3]);
+            result = ps.executeQuery();
+            if(result.next()){return true;}
+        } catch (SQLException e) {
+            return true;
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        return false;
+    }
+
     // Método para inserir um novo usuario no banco
     String insereNoBanco(String[] form){
         PreparedStatement ps = null;
@@ -117,24 +138,20 @@ class Banco {
         }}
     }
 
-    // Checa se o cpf ja esta cadastrado
-    boolean checaCpf(String cpf){
-        ResultSet result;
+    int limpaSessao(String sessao){
         PreparedStatement ps = null;
         try {
-            String query =  "SELECT * FROM user WHERE cpf=?";
+            String query =  "UPDATE user SET tokenSessao='0' WHERE tokenSessao=?";
             ps = conn.prepareStatement(query);
-            ps.setString(1, cpf);
-            result = ps.executeQuery();
-            if(result.next()){return true;}
+            ps.setString(1, sessao);
+            return ps.executeUpdate();
         } catch (SQLException e) {
-            return true;
+            return 0;
         }finally{try {
             if(ps != null){ps.close();}
         } catch (SQLException e) {
             e.printStackTrace();
         }}
-        return false;
     }
 
     // Confirma o token de e-mail de um usuario
