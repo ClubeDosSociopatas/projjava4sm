@@ -282,7 +282,7 @@ class Banco {
     String agendaVacina(String[] form){
         PreparedStatement ps = null;
         try{
-            String query =  "INSERT INTO pessoaVacina (vacinaId, dataAplicar, userId) VALUES (?, ?, (SELECT id FROM user WHERE tokenSessao=?))";
+            String query =  "INSERT INTO pessoaVacina (vacinaId, dataAplicar, userId, vencida) VALUES (?, ?, (SELECT id FROM user WHERE tokenSessao=?), false)";
 
             ps = conn.prepareStatement(query);
             ps.setInt(1, Integer.parseInt(form[0]));
@@ -308,7 +308,7 @@ class Banco {
         ResultSet result;
         PreparedStatement ps = null;
         try {
-            String query =  "SELECT pv.id, va.nome, pv.dataAplicar, va.descricao FROM user AS us INNER JOIN pessoaVacina AS pv ON us.id = pv.userId AND us.tokenSessao=? INNER JOIN vacina AS va ON pv.vacinaId = va.id";
+            String query =  "SELECT pv.id, va.nome, pv.dataAplicar, va.descricao, pv.vencida, va.validade FROM user AS us INNER JOIN pessoaVacina AS pv ON us.id = pv.userId AND us.tokenSessao=? INNER JOIN vacina AS va ON pv.vacinaId = va.id";
             ps = conn.prepareStatement(query);
             ps.setString(1, form[0]);
             result = ps.executeQuery();
@@ -316,7 +316,9 @@ class Banco {
                 vacinas.add(Integer.toString(result.getInt("id"))+"&"+
                             result.getString("nome")+"&"+
                             result.getString("dataAplicar")+"&"+
-                            result.getString("descricao"));
+                            result.getString("descricao")+"'"+
+                            Boolean.toString(result.getBoolean("vencida"))+"&"+
+                            Integer.toString(result.getInt("validade")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -326,5 +328,23 @@ class Banco {
             e.printStackTrace();
         }}
         return vacinas;
+    }
+
+    // Marca uma vacina como vencida
+    void marcaVacinaVencida(int id){
+        PreparedStatement ps = null;
+        try{
+            String query =  "UPDATE pessoaVacina SET vencida=true WHERE id=?";
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+        catch(SQLException ex) {
+            ex.printStackTrace();
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
     }
 }

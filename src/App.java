@@ -20,7 +20,10 @@ public class App {
         String leitura;
         // * MENU PRINCIPAL *
         while(true){
-            if(!chaveS.equals("")){menuLogado();}
+            if(!chaveS.equals("")){
+                recebeAvisos();
+                menuLogado();
+            }
             System.out.print("\n- Menu Inicial -\n"+
                              "1 - Criar Conta\n"+
                              "2 - Efetuar Login\n"+
@@ -110,6 +113,17 @@ public class App {
             System.out.print("Senha precisa ter 10 caracteres, letra minúsculas e maiúsculas e no mínimo 1 caractere especial e número!\nNova Senha(digite '0' para voltar): ");
         }
         System.out.println(ctrl.recuperarSenha(formulario));
+    }
+
+    // Método para receber avisos ao logar
+    private static void recebeAvisos(){
+        String[] formulario = new String[1];
+        formulario[0] = chaveS;
+        String[] avisos = ctrl.criaAvisosUsuario(formulario);
+        int i;
+        for(i = 0; i < avisos.length; i++){
+            System.out.println("AVISO: "+avisos[i]);
+        }
     }
 
     // * MENU USUARIO LOGADO *

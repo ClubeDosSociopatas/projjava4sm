@@ -114,6 +114,44 @@ public class Controlador {
         return "Erro";
     }
 
+    // Método para criar avisos ao usuario
+    public String[] criaAvisosUsuario(String[] form){
+        if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return new String[1];}
+        ArrayList<String> vacinas = bd.retornaCarteirinha(form);
+        int i;
+        for(i = 0; i < vacinas.size(); i++){
+            if(vacinas.get(i).split("'")[1].split("&")[0].equals("false")){
+                String data = vacinas.get(i).split("'")[0].split("&")[2].split("-")[0];
+                LocalDateTime dataVacina = LocalDateTime.of(Integer.parseInt(data.split("/")[2]), 
+                                                            Integer.parseInt(data.split("/")[1]), 
+                                                            Integer.parseInt(data.split("/")[0]), 
+                                                            0, 0);
+                LocalDateTime dataAgora = LocalDateTime.now();
+                dataAgora = LocalDateTime.of(dataAgora.getYear(), dataAgora.getMonth(), dataAgora.getDayOfMonth(), 0, 0);
+                if(dataVacina.isEqual(dataAgora)){
+                    vacinas.set(i, "Sua vacina de "+vacinas.get(i).split("'")[0].split("&")[1]+" é aplicada hoje!");
+                    continue;
+                }
+                if(dataAgora.isAfter(dataVacina.plusDays(Integer.parseInt(vacinas.get(i).split("'")[1].split("&")[1])))){
+                    bd.marcaVacinaVencida(Integer.parseInt(vacinas.get(i).split("'")[0].split("&")[0]));
+                    vacinas.set(i, "Sua vacina de "+vacinas.get(i).split("'")[0].split("&")[1]+" venceu!");
+                    continue;
+                }
+                vacinas.remove(i);
+                i--;
+            }
+            else{
+                vacinas.remove(i);
+                i--;
+            }
+        }
+        String[] resposta = new String[vacinas.size()];
+        for(i = 0; i < vacinas.size(); i++){
+            resposta[i] = vacinas.get(i);
+        }
+        return resposta;
+    }
+
     // Método para retornar dados do usuario
     public String[] dadosUsuario(String[] form){
         if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return new String[1];}
@@ -196,7 +234,7 @@ public class Controlador {
         String[] listaVacinas = new String[vacinas.size()];
         int i;
         for(i = 0; i < listaVacinas.length; i++){
-            listaVacinas[i] = vacinas.get(i);
+            listaVacinas[i] = vacinas.get(i).split("'")[0];
         }
         return listaVacinas;
     }
