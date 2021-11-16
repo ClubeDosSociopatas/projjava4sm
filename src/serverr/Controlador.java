@@ -18,6 +18,8 @@ import java.util.Properties;
 public class Controlador {
     // Variavel com a classe do banco
     private Banco bd = new Banco();
+    // Variavel para salvar as vacinas que usuario tem acesso
+    private ArrayList<String> vacinasDisponiveis = new ArrayList<>();
 
     // MÉTODOS PUBLICOS
 
@@ -196,16 +198,25 @@ public class Controlador {
     // Método para retornar vacinas
     public String[] recebeVacinas(){
         ArrayList<String> vacinas = bd.selecionaVacinas();
-        String[] listaVacinas = new String[vacinas.size()];
+        vacinasDisponiveis.clear();
         int i;
-        for(i = 0; i < listaVacinas.length; i++){
-            listaVacinas[i] = vacinas.get(i);
+        for(i = 0; i < vacinas.size(); i++){
+            if(!Boolean.parseBoolean(vacinas.get(i).split("'")[1])){
+                vacinas.remove(i);
+                i--;
+            }
+        }
+        String[] listaVacinas = new String[vacinas.size()];
+        for(i = 0; i < vacinas.size(); i++){
+            listaVacinas[i] = vacinas.get(i).split("'")[0];
+            vacinasDisponiveis.add(vacinas.get(i).split("'")[0].split("&")[0]);
         }
         return listaVacinas;
     }
 
     public String agendarVacina(String[] form){
-        if(form.length != 3 || form[2].length() < 64 || testeStrings(form)){return "Erro";}
+        if(form.length != 3 || form[2].length() < 64 || testeStrings(form) || !vacinasDisponiveis.contains(form[0])){return "Erro";}
+        vacinasDisponiveis.clear();
         try{
             String[] data = form[1].split("-")[0].split("/");
             String[] horario = form[1].split("-")[1].split(":");

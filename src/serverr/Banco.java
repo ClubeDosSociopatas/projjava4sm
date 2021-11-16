@@ -259,14 +259,15 @@ class Banco {
         ResultSet result;
         PreparedStatement ps = null;
         try {
-            String query =  "SELECT * FROM vacina";
+            String query =  "SELECT v.id, v.nome, v.validade, v.descricao, IFNULL(pv.vencida, true) AS disponivel FROM vacina AS v LEFT JOIN pessoaVacina AS pv ON v.id=pv.vacinaId AND pv.vencida=0 LEFT JOIN user AS u ON pv.userId=u.id AND u.tokenSessao='af481ab9dc816defdab1365ef403975e05e21dc5bd0e17fd3344f04ed28872e5';";
             ps = conn.prepareStatement(query);
             result = ps.executeQuery();
             while(result.next()){
                 vacinas.add(Integer.toString(result.getInt("id"))+"&"+
                             result.getString("nome")+"&"+
                             Integer.toString(result.getInt("validade"))+"&"+
-                            result.getString("descricao"));
+                            result.getString("descricao")+"'"+
+                            Boolean.toString(result.getBoolean("disponivel")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
