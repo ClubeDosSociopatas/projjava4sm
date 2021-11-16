@@ -20,6 +20,7 @@ public class Controlador {
     private Banco bd = new Banco();
     // Variavel para salvar as vacinas que usuario tem acesso
     private ArrayList<String> vacinasDisponiveis = new ArrayList<>();
+    private boolean nivelUsuario = false;
 
     // MÉTODOS PUBLICOS
 
@@ -70,7 +71,9 @@ public class Controlador {
             hexString.insert(0, '0'); 
         }
         form[0] = hexString.toString();
-        if(bd.insereToken(form) == 1){return "id="+form[0];}
+        if(bd.insereToken(form) == 1){
+            nivelUsuario = bd.checaNivel(form[0]);
+            return "id="+form[0]+"&"+Boolean.toString(nivelUsuario);}
         return "Falha no Login, conta pode não existir ou falta confirmar seu e-mail.";
     }
 
@@ -161,6 +164,7 @@ public class Controlador {
         return bd.infoUsuario(form[0]);
     }
 
+    // Método para começar mudança de e-mail
     public String comecaMudancaEmail(String[] form){
         if(form.length != 2 || form[1].length() < 64 || testeStrings(form)){return "Erro";}
         byte[] b = new byte[16];
@@ -182,18 +186,38 @@ public class Controlador {
         return "Erro";
     }
 
+    // Método para mudar e-mail
     public String mudaEmail(String[] form){
         if(form.length != 2 || testeStrings(form) || form[0].length() < 32){return "Erro";}
         if(bd.mudaEmail(form) == 0){return "Erro";}
         return "Sucesso!";
     }
 
+    // Método para mudar a senha
     public String mudaSenha(String[] form){
         if(form.length != 3 || testeStrings(form)){return "Erro";}
         form[0] = hashingSalt(form[0]);
         form[1] = hashingSalt(form[1]);
         if(bd.mudaSenha(form) == 0){return "Erro, senha incorreta";}
         return "Sucesso!";
+    }
+
+    // Método para escrever um comentario
+    public String escreveComentario(String[] form){
+        if(form.length != 2 || form[0].length() < 64 || testeStrings(form)){return "Erro";}
+        return bd.insereComentarioUser(form);
+    }
+
+    // Método para retornar comentarios de um usuario
+    public String[] obtemComentariosUsuario(String[] form){
+        if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return new String[0];}
+        ArrayList<String> comentarios = bd.retornaComentariosUsuario(form[0]);
+        int i;
+        String[] comentRetorno = new String[comentarios.size()];
+        for(i = 0; i < comentRetorno.length; i++){
+            comentRetorno[i] = comentarios.get(i);
+        }
+        return comentRetorno;
     }
 
     // Método para retornar vacinas

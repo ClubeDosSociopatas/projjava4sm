@@ -97,7 +97,26 @@ class Banco {
         } catch (SQLException e) {
             e.printStackTrace();
         }}
-        
+    }
+
+    // Método para testar o nivel de um usuario
+    boolean checaNivel(String sessao){
+        ResultSet result;
+        PreparedStatement ps = null;
+        try {
+            String query =  "SELECT * FROM user WHERE tokenSessao=? AND adm=true";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, sessao);
+            result = ps.executeQuery();
+            if(result.next()){return true;}
+        } catch (SQLException e) {
+            return false;
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        return false;
     }
 
     // Método para inserir um token de recuperação de senha em um usuario
@@ -251,6 +270,54 @@ class Banco {
         } catch (SQLException e) {
             e.printStackTrace();
         }}
+    }
+
+    // Insere comentario
+    String insereComentarioUser(String[] form){
+        PreparedStatement ps = null;
+        try{
+            String query =  "INSERT INTO comentarios(userId, comentario) VALUES ((SELECT id FROM user WHERE tokenSessao=?), ?)";
+
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[0]);
+            ps.setString(2, form[1]);
+            ps.executeUpdate();
+
+            return "Sucesso";
+        }
+        catch(SQLException ex) {
+            return "Erro";
+        }
+        finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+    }
+
+    // Retorna comentarios
+    ArrayList<String> retornaComentariosUsuario(String sessao){
+        ArrayList<String> vacinas = new ArrayList<>();
+        ResultSet result;
+        PreparedStatement ps = null;
+        try {
+            String query =  "SELECT u.nome, c.comentario, c.fechado FROM comentarios AS c INNER JOIN user AS u ON u.tokenSessao=? AND c.userId=u.id";
+            ps = conn.prepareStatement(query);
+            ps.setString(1, sessao);
+            result = ps.executeQuery();
+            while(result.next()){
+                vacinas.add(result.getString("nome")+"&"+
+                            result.getString("comentario")+"&"+
+                            Boolean.toString(result.getBoolean("fechado")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        return vacinas;
     }
 
     // Retorna as vacinas

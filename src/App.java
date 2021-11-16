@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 public class App {
     // Variavel para Sessão / leitura de teclado / classe de controle
     private static String chaveS = "";
+    private static boolean nivelUser = false;
     private static Scanner ler = new Scanner(System.in);
     private static Controlador ctrl = new Controlador();
 
@@ -79,7 +80,8 @@ public class App {
         formulario[2] = testarSenha(ler.nextLine());
         resultado = ctrl.usuarioLogar(formulario);
         if(resultado.charAt(0) == 'i' && resultado.charAt(1) == 'd'){
-            chaveS = resultado.substring(resultado.indexOf("=")+1);
+            chaveS = resultado.split("&")[0].substring(resultado.indexOf("=")+1);
+            nivelUser = Boolean.parseBoolean(resultado.split("&")[1]);
             System.out.println("Logado com Sucesso!");
             return;
         }
@@ -134,16 +136,16 @@ public class App {
                              "1 - Catálogo de vacinas\n"+
                              "2 - Visualizar carteirinha de vacinação\n"+
                              "3 - Informações de usuario\n"+
-                             "4 - Informações para contato\n"+
+                             "4 - Menu para contato\n"+
                              "0 - Sair\n"+
                              "Entre com sua escolha: ");
             leitura = ler.nextLine();
             if(leitura.equals("1")){agendarVacina();}
             if(leitura.equals("2")){visualizarCarteirinha();}
             if(leitura.equals("3")){menuInfoUsu();}
-            if(leitura.equals("4")){System.out.println("-- VaxxBank --\n"+
-                                                    "Email para contato: rafazeteste@gmail.com\n"+
-                                                    "Telefone para atendimento ao cliente: (41) 40557-9353");
+            if(leitura.equals("4")){
+                if(nivelUser){menuContatoAdmin();}
+                else{menuContato();}
             }
             if(leitura.equals("0")){
                 String[] formulario = new String[1];
@@ -264,6 +266,77 @@ public class App {
             return;
         }
         System.out.println(resultado);
+    }
+
+    // * MENU PARA CONTATO ADMIN *
+    private static void menuContatoAdmin(){
+        String leitura = "";
+        while(true){
+            System.out.print("\n- Menu para Contato -\n"+
+                             "1 - Visualizar Novos Comentarios/Perguntas\n"+
+                             "2 - Visualizar Comentarios/Perguntas que Respondeu\n"+
+                             "3 - Fechar Linha de Comentarios/Pergunta\n"+
+                             "0 - Sair\n"+
+                             "Entre com sua escolha: ");
+            leitura = ler.nextLine();
+            if(leitura.equals("1")){
+                mudarEmail();
+            }
+            if(leitura.equals("2")){
+                mudarSenha();
+            }
+            if(leitura.equals("0")){
+                break;
+            }
+        }
+    }
+
+    // * MENU PARA CONTATO *
+    private static void menuContato(){
+        String leitura = "";
+        while(true){
+            System.out.print("\n- Menu para Contato -\n"+
+                             "1 - Escrever um Comentario\n"+
+                             "2 - Visualizar Comentarios/Respostas\n"+
+                             "3 - Listar informações de contato\n"+
+                             "0 - Sair\n"+
+                             "Entre com sua escolha: ");
+            leitura = ler.nextLine();
+            if(leitura.equals("1")){
+                escreverComentario();
+            }
+            if(leitura.equals("2")){
+                visualizarComentarios();
+            }
+            if(leitura.equals("3")){
+                System.out.println("-- VaxxBank --\n"+
+                           "Email para contato: rafazeteste@gmail.com\n"+
+                           "Telefone para atendimento ao cliente: (41) 40557-9353");
+            }
+            if(leitura.equals("0")){
+                break;
+            }
+        }
+    }
+
+    private static void escreverComentario(){
+        String[] formulario = new String[2];
+        formulario[0] = chaveS;
+        System.out.print("Entre com seu comentario: ");
+        formulario[1] = ler.nextLine();
+        System.out.println(ctrl.escreveComentario(formulario));
+    }
+
+    private static void visualizarComentarios(){
+        String[] formulario = new String[1];
+        formulario[0] = chaveS;
+        String[] comentarios = ctrl.obtemComentariosUsuario(formulario);
+        int i;
+        System.out.println("   *---*   COMENTARIOS   *---*   ");
+        for(i = 0; i < comentarios.length; i++){
+            if(Boolean.parseBoolean(comentarios[i].split("&")[2])){System.out.print("DISCUSSAO FECHADA - ");}
+            System.out.println(comentarios[i].split("&")[0]+": "+comentarios[i].split("&")[1]);
+        }
     }
 
 
