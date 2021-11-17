@@ -30,6 +30,31 @@ class Banco {
         catch(SQLException ex) {
             ex.printStackTrace();
         }
+        // Inicializa o banco
+        PreparedStatement ps = null;
+        try {
+            String query = "CREATE TABLE IF NOT EXISTS user(id INT(6) NOT NULL AUTO_INCREMENT,nome VARCHAR(40),senha VARCHAR(64),cpf VARCHAR(11),email VARCHAR(70),tokenSessao VARCHAR(64),tokenSenha VARCHAR(32) NOT NULL,tokenMudaEmail VARCHAR(32) NOT NULL,tokenCEmail VARCHAR(8) NOT NULL,adm BOOLEAN NOT NULL DEFAULT false,PRIMARY KEY(id));";
+            ps = conn.prepareStatement(query);
+            ps.executeUpdate();
+            ps.close();
+            query = "CREATE TABLE IF NOT EXISTS vacina(id INT(6) NOT NULL AUTO_INCREMENT PRIMARY KEY,nome VARCHAR(40),descricao VARCHAR(200),validade INT(5));";
+            ps = conn.prepareStatement(query);
+            ps.executeUpdate();
+            ps.close();
+            query = "CREATE TABLE IF NOT EXISTS pessoaVacina(id INT(8) NOT NULL AUTO_INCREMENT PRIMARY KEY,userId INT(6) NOT NULL,vacinaId INT(6) NOT NULL,dataAplicar VARCHAR(18) NOT NULL,vencida BOOLEAN,FOREIGN KEY(userId) REFERENCES user(id),FOREIGN KEY(vacinaId) REFERENCES vacina(id));";
+            ps = conn.prepareStatement(query);
+            ps.executeUpdate();
+            ps.close();
+            query = "CREATE TABLE IF NOT EXISTS comentarios(id INT(8) NOT NULL AUTO_INCREMENT PRIMARY KEY,userId INT(6) NOT NULL,referencia INT(8) NOT NULL DEFAULT 0,respostaId INT(6) NOT NULL DEFAULT 0,fechado BOOLEAN NOT NULL DEFAULT false,comentario VARCHAR(300),FOREIGN KEY(userId) REFERENCES user(id));";
+            ps = conn.prepareStatement(query);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
     }
 
     // Checa se o cpf ja esta cadastrado
@@ -157,6 +182,7 @@ class Banco {
         }}
     }
 
+    // Método para limpar a sessão de um usuario
     int limpaSessao(String sessao){
         PreparedStatement ps = null;
         try {
@@ -272,6 +298,103 @@ class Banco {
         }}
     }
 
+    // Retorna comentarios ainda não respondidos
+    ArrayList<String> retornaComentariosNovos(){
+        ArrayList<String> coment = new ArrayList<>();
+        ResultSet result;
+        PreparedStatement ps = null;
+        try {
+            String query =  "SELECT c.id, u.nome, c.comentario FROM comentarios AS c INNER JOIN user AS u ON c.userId=u.id AND c.fechado=false AND c.referencia=0";
+            ps = conn.prepareStatement(query);
+            result = ps.executeQuery();
+            while(result.next()){
+                coment.add(Integer.toString(result.getInt("id"))+"&"+
+                           result.getString("nome")+"&"+
+                           result.getString("comentario"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+        return coment;
+    }
+
+    // Pega userId de um comentario
+    int recebeUserId(String[] form){
+        PreparedStatement ps = null;
+        ResultSet result;
+        try{
+            int valor = 0;
+            String query = "SELECT userId FROM comentarios WHERE id=?";
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, Integer.parseInt(form[1]));
+            result = ps.executeQuery();
+            while(result.next()){
+                valor = result.getInt("userId");
+            }
+            return valor;
+        }
+        catch(SQLException ex) {
+            return 0;
+        }
+        finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+    }
+
+    // Insere Resposta
+    String insereRespostaComentario(String[] form){
+        PreparedStatement ps = null;
+        try{
+            String query =  "INSERT INTO comentarios(userId, comentario, referencia, respostaId) VALUES ((SELECT id FROM user WHERE tokenSessao=?), ?, ?, ?)";
+            int valor = recebeUserId(form);
+            ps = conn.prepareStatement(query);
+            ps.setString(1, form[0]);
+            ps.setString(2, form[2]);
+            ps.setInt(3, Integer.parseInt(form[1]));
+            ps.setInt(4, valor);
+            ps.executeUpdate();
+
+            fechaComent(Integer.parseInt(form[1]));
+
+            return "Sucesso";
+        }
+        catch(SQLException ex) {
+            return "Erro";
+        }
+        finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+    }
+
+    // Fecha Comentario
+    private void fechaComent(int id){
+        PreparedStatement ps = null;
+        try{
+            String query =  "UPDATE comentarios SET fechado=true WHERE id=?";
+
+            ps = conn.prepareStatement(query);
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+        }
+        catch(SQLException ex) {
+            ex.printStackTrace();
+        }
+        finally{try {
+            if(ps != null){ps.close();}
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }}
+    }
+
     // Insere comentario
     String insereComentarioUser(String[] form){
         PreparedStatement ps = null;
@@ -297,18 +420,21 @@ class Banco {
 
     // Retorna comentarios
     ArrayList<String> retornaComentariosUsuario(String sessao){
-        ArrayList<String> vacinas = new ArrayList<>();
+        ArrayList<String> coment = new ArrayList<>();
         ResultSet result;
         PreparedStatement ps = null;
         try {
-            String query =  "SELECT u.nome, c.comentario, c.fechado FROM comentarios AS c INNER JOIN user AS u ON u.tokenSessao=? AND c.userId=u.id";
+            String query =  "SELECT id, comentario, fechado, referencia FROM comentarios WHERE userId=(SELECT id FROM user WHERE tokenSessao=?) OR respostaId=(SELECT id FROM user WHERE tokenSessao=?)";
             ps = conn.prepareStatement(query);
             ps.setString(1, sessao);
+            ps.setString(2, sessao);
             result = ps.executeQuery();
             while(result.next()){
-                vacinas.add(result.getString("nome")+"&"+
-                            result.getString("comentario")+"&"+
-                            Boolean.toString(result.getBoolean("fechado")));
+                String str = "&"+result.getString("comentario")+"&"+Integer.toString(result.getInt("id"))+"&"+Boolean.toString(result.getBoolean("fechado"));
+                if(result.getInt("referencia") != 0){
+                    str = str+":"+Integer.toString(result.getInt("referencia"));
+                }
+                coment.add(str);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -317,17 +443,18 @@ class Banco {
         } catch (SQLException e) {
             e.printStackTrace();
         }}
-        return vacinas;
+        return coment;
     }
 
     // Retorna as vacinas
-    ArrayList<String> selecionaVacinas(){
+    ArrayList<String> selecionaVacinas(String sessao){
         ArrayList<String> vacinas = new ArrayList<>();
         ResultSet result;
         PreparedStatement ps = null;
         try {
-            String query =  "SELECT v.id, v.nome, v.validade, v.descricao, IFNULL(pv.vencida, true) AS disponivel FROM vacina AS v LEFT JOIN pessoaVacina AS pv ON v.id=pv.vacinaId AND pv.vencida=0 LEFT JOIN user AS u ON pv.userId=u.id AND u.tokenSessao='af481ab9dc816defdab1365ef403975e05e21dc5bd0e17fd3344f04ed28872e5';";
+            String query =  "SELECT DISTINCT v.id, v.nome, v.validade, v.descricao, IFNULL(pv.vencida,true) AS disponivel FROM pessoaVacina AS pv RIGHT JOIN vacina AS v ON pv.vacinaId=v.id AND pv.userId=(SELECT id FROM user WHERE tokenSessao=?);";
             ps = conn.prepareStatement(query);
+            ps.setString(1, sessao);
             result = ps.executeQuery();
             while(result.next()){
                 vacinas.add(Integer.toString(result.getInt("id"))+"&"+

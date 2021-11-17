@@ -25,6 +25,7 @@ public class App {
                 recebeAvisos();
                 menuLogado();
             }
+            System.out.println("Seja bem vindo ao VaxxBank!");
             System.out.print("\n- Menu Inicial -\n"+
                              "1 - Criar Conta\n"+
                              "2 - Efetuar Login\n"+
@@ -165,7 +166,7 @@ public class App {
         formulario[0] = "-1";
         formulario[2] = chaveS;
 
-        String[] vacinas = ctrl.recebeVacinas();
+        String[] vacinas = ctrl.recebeVacinas(formulario);
         int i;
         System.out.println(vacinas.length);
         System.out.print("\n- Vacinas disponiveis -\n"+
@@ -178,7 +179,7 @@ public class App {
                                vacinaAtual[3]);
         }
 
-        while(Integer.parseInt(formulario[0]) < 0 || Integer.parseInt(formulario[0]) > vacinas.length){
+        while(Integer.parseInt(formulario[0]) < 0){
             System.out.print("Entre com o id da vacina que deseja agendar(0 para voltar): ");
             formulario[0] = ler.nextLine();
             if(formulario[0].equals("0")){return;}
@@ -270,24 +271,21 @@ public class App {
 
     // * MENU PARA CONTATO ADMIN *
     private static void menuContatoAdmin(){
-        String leitura = "";
+        String[] formulario = new String[4];
+        formulario[0] = chaveS;
+        String[] comentarios = ctrl.recebeComentariosADM();
         while(true){
-            System.out.print("\n- Menu para Contato -\n"+
-                             "1 - Visualizar Novos Comentarios/Perguntas\n"+
-                             "2 - Visualizar Comentarios/Perguntas que Respondeu\n"+
-                             "3 - Fechar Linha de Comentarios/Pergunta\n"+
-                             "0 - Sair\n"+
-                             "Entre com sua escolha: ");
-            leitura = ler.nextLine();
-            if(leitura.equals("1")){
-                mudarEmail();
+            System.out.println("   *---*   COMENTARIOS   *---*   ");
+            int i;
+            for(i = 0; i < comentarios.length; i++){
+                System.out.println(comentarios[i].split("&")[0]+" - "+comentarios[i].split("&")[1]+":  "+comentarios[i].split("&")[2]);
             }
-            if(leitura.equals("2")){
-                mudarSenha();
-            }
-            if(leitura.equals("0")){
-                break;
-            }
+            System.out.print("Digite o ID que Deseja Responder('0' para voltar): ");
+            formulario[1] = ler.nextLine();
+            if(formulario[1].equals("0")){break;}
+            System.out.print("Digite sua Resposta: ");
+            formulario[2] = ler.nextLine();
+            System.out.println(ctrl.escreverRespostaADM(formulario));
         }
     }
 
@@ -297,7 +295,7 @@ public class App {
         while(true){
             System.out.print("\n- Menu para Contato -\n"+
                              "1 - Escrever um Comentario\n"+
-                             "2 - Visualizar Comentarios/Respostas\n"+
+                             "2 - Visualizar Seus Comentarios/Perguntas\n"+
                              "3 - Listar informações de contato\n"+
                              "0 - Sair\n"+
                              "Entre com sua escolha: ");
@@ -319,6 +317,7 @@ public class App {
         }
     }
 
+    // Método para escrever um novo comentario
     private static void escreverComentario(){
         String[] formulario = new String[2];
         formulario[0] = chaveS;
@@ -327,15 +326,48 @@ public class App {
         System.out.println(ctrl.escreveComentario(formulario));
     }
 
+    // Método para visualizar seus comentarios
     private static void visualizarComentarios(){
         String[] formulario = new String[1];
         formulario[0] = chaveS;
-        String[] comentarios = ctrl.obtemComentariosUsuario(formulario);
+        String[] coment = ctrl.obtemComentariosUsuario(formulario);
+        String[] comentarios = new String[coment.length];
+        String[] respostas = new String[coment.length];
         int i;
+        int contResp = 0;
+        int contComent = 0;
+        for(i = 0; i < coment.length; i++){
+            System.out.println(coment[i]);
+            if(coment[i].contains(":")){
+                respostas[contResp] = coment[i];
+                contResp++;
+            }
+            else{
+                comentarios[contComent] = coment[i];
+                contComent++;
+            }
+        }
         System.out.println("   *---*   COMENTARIOS   *---*   ");
         for(i = 0; i < comentarios.length; i++){
-            if(Boolean.parseBoolean(comentarios[i].split("&")[2])){System.out.print("DISCUSSAO FECHADA - ");}
-            System.out.println(comentarios[i].split("&")[0]+": "+comentarios[i].split("&")[1]);
+            try{
+                if(!Boolean.parseBoolean(comentarios[i].split("&")[3])){      
+                    System.out.println();   
+                    continue;
+                }
+            }catch(NullPointerException ne){
+                System.out.print("");
+            }
+            int j;
+            for(j = 0; j < respostas.length; j++){
+                try{
+                    if(respostas[j].split(":")[1].equals(comentarios[i].split("&")[2])){
+                        System.out.println("  ---   R: "+respostas[j].split("&")[1]);
+                    }
+
+                }catch(NullPointerException ne){
+                    System.out.print("");
+                }
+            }
         }
     }
 

@@ -46,7 +46,7 @@ public class Controlador {
         }
         form[4] = hexString.toString();
         if(bd.insereNoBanco(form).equals("Sucesso")){
-            //enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
+            enviarEmail(form[3], "Confirmacao de Email", "Utilize o codigo: "+hexString.toString()+"\nPara confirmar sua conta.");
             return "Sucesso";
         }
         return "Erro";
@@ -104,7 +104,7 @@ public class Controlador {
         } 
         form[0] = hexString.toString();
         if(bd.insereRecuperarToken(form) == 1){
-            //enviarEmail(form[1], "Recuperação de Senha", "Utilize o código: "+form[0]+"\nPara recuperar sua senha");
+            enviarEmail(form[1], "Recuperação de Senha", "Utilize o código: "+form[0]+"\nPara recuperar sua senha");
             return "c";
         }
         return "";
@@ -180,7 +180,7 @@ public class Controlador {
         } 
         form[0] = hexString.toString();
         if(bd.insereTokenMudaEmail(form) == 1){
-            //enviarEmail(form[1], "Mudança de email", "Utilize o código: "+form[0]+"\nPara mudar seu email");
+            enviarEmail(form[1], "Mudança de email", "Utilize o código: "+form[0]+"\nPara mudar seu email");
             return "Sucesso!";
         }
         return "Erro";
@@ -202,10 +202,28 @@ public class Controlador {
         return "Sucesso!";
     }
 
+    // Método para um administrador responder um usuario
+    public String escreverRespostaADM(String[] form){
+        if(form.length != 4 || form[0].length() < 64 || testeStrings(form) || !nivelUsuario){return "Erro";}
+        return bd.insereRespostaComentario(form);
+    }
+
     // Método para escrever um comentario
     public String escreveComentario(String[] form){
         if(form.length != 2 || form[0].length() < 64 || testeStrings(form)){return "Erro";}
         return bd.insereComentarioUser(form);
+    }
+
+    // Método para retornar comentarios para um administrador
+    public String[] recebeComentariosADM(){
+        if(!nivelUsuario){return new String[0];}
+        ArrayList<String> comentarios = bd.retornaComentariosNovos();
+        int i;
+        String[] comentRetorno = new String[comentarios.size()];
+        for(i = 0; i < comentRetorno.length; i++){
+            comentRetorno[i] = comentarios.get(i);
+        }
+        return comentRetorno;
     }
 
     // Método para retornar comentarios de um usuario
@@ -221,8 +239,9 @@ public class Controlador {
     }
 
     // Método para retornar vacinas
-    public String[] recebeVacinas(){
-        ArrayList<String> vacinas = bd.selecionaVacinas();
+    public String[] recebeVacinas(String[] form){
+        if(form.length != 3 || form[2].length() < 64 || testeStrings(form)){return new String[0];}
+        ArrayList<String> vacinas = bd.selecionaVacinas(form[2]);
         vacinasDisponiveis.clear();
         int i;
         for(i = 0; i < vacinas.size(); i++){
@@ -239,6 +258,7 @@ public class Controlador {
         return listaVacinas;
     }
 
+    // Método para agendar vacina
     public String agendarVacina(String[] form){
         if(form.length != 3 || form[2].length() < 64 || testeStrings(form) || !vacinasDisponiveis.contains(form[0])){return "Erro";}
         vacinasDisponiveis.clear();
@@ -264,6 +284,7 @@ public class Controlador {
         return bd.agendaVacina(form);
     }
 
+    // Método para receber a carteirinha de vacinação de um usuario
     public String[] recebeCarteirinha(String[] form){
         if(form.length != 1 || form[0].length() < 64 || testeStrings(form)){return new String[0];}
         ArrayList<String> vacinas = bd.retornaCarteirinha(form);
@@ -285,7 +306,7 @@ public class Controlador {
 
     // Testa formularios recebidos, procura por caracteres especiais
     private boolean testeStrings(String[] form){
-        int[] chrTeste = {39, 34, 61, 59, 92};
+        int[] chrTeste = {34, 35, 38, 39, 59, 60, 62, 92, 96};
         int i;
         int o;
         int p;
