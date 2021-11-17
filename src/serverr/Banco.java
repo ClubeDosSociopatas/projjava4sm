@@ -452,7 +452,7 @@ class Banco {
         ResultSet result;
         PreparedStatement ps = null;
         try {
-            String query =  "SELECT DISTINCT v.id, v.nome, v.validade, v.descricao, IFNULL(pv.vencida,true) AS disponivel FROM pessoaVacina AS pv RIGHT JOIN vacina AS v ON pv.vacinaId=v.id AND pv.userId=(SELECT id FROM user WHERE tokenSessao=?);";
+            String query =  "SELECT DISTINCT v.id, v.nome, v.validade, v.descricao, IFNULL(pv.vencida,true) AS disponivel FROM pessoaVacina AS pv RIGHT JOIN vacina AS v ON pv.vacinaId=v.id AND pv.vencida=0 AND pv.userId=(SELECT id FROM user WHERE tokenSessao=?);";
             ps = conn.prepareStatement(query);
             ps.setString(1, sessao);
             result = ps.executeQuery();
