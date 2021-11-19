@@ -132,15 +132,16 @@ public class Controlador {
                 dataAgora = LocalDateTime.of(dataAgora.getYear(), dataAgora.getMonth(), dataAgora.getDayOfMonth(), 0, 0);
                 if(dataVacina.isEqual(dataAgora)){
                     vacinas.set(i, "Sua vacina de "+vacinas.get(i).split("'")[0].split("&")[1]+" é aplicada hoje!");
-                    continue;
                 }
-                if(dataAgora.isAfter(dataVacina.plusDays(Integer.parseInt(vacinas.get(i).split("'")[1].split("&")[1])))){
-                    bd.marcaVacinaVencida(Integer.parseInt(vacinas.get(i).split("'")[0].split("&")[0]));
-                    vacinas.set(i, "Sua vacina de "+vacinas.get(i).split("'")[0].split("&")[1]+" venceu!");
-                    continue;
+                else{
+                    if(dataAgora.isAfter(dataVacina.plusDays(Integer.parseInt(vacinas.get(i).split("'")[1].split("&")[1])))){
+                        bd.marcaVacinaVencida(Integer.parseInt(vacinas.get(i).split("'")[0].split("&")[0]));
+                        vacinas.set(i, "Sua vacina de "+vacinas.get(i).split("'")[0].split("&")[1]+" venceu!");
+                        continue;
+                    }
+                    vacinas.remove(i);
+                    i--;
                 }
-                vacinas.remove(i);
-                i--;
             }
             else{
                 vacinas.remove(i);
